@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const dotenv = require('dotenv');
-const cors = require('cors');
+var cors = require('cors')
 
 dotenv.config();
 
@@ -14,9 +14,11 @@ const authRoutes = require('./routes/auth');
 // initialize the express app
 const app = express();
 
+// Use CORS with options
+app.use(cors())
+
 // setup the middleware
 app.use(bodyParser.json());
-app.use(cors());
 
 // setup the API routes
 app.use('/user', userRoutes);
@@ -31,8 +33,13 @@ mongoose.connect(process.env.MONGODB_URI)
     console.error('Error: Failed to connect to the Database', err);
   });
 
+
 // start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+const PORT = 8888;
+
+const server = app.listen(PORT, () => {
+  const host = server.address().address;
+  const port = server.address().port;
+
+  console.log(`Server is running at http://${host === '::' ? 'localhost' : host}:${port}`);
 });

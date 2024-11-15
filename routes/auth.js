@@ -6,44 +6,65 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Sign in
+// Sign-in route
 router.post('/signin', async (req, res) => {
+  const { email, password } = req.body;
+
   try {
-    const { email, password } = req.body;
-
-    console.log(email)
-    console.log(password)
-
-    // Find user by the submitted email
-    let user = await User.findOne({ email });
+    // Find the user by email
+    const user = await User.findOne({ email });
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: 'Authentication error: Email is invalid!' });
+      return res.status(404).json({ message: 'User not found' });
     }
 
-    // Compare the password with the database
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res
-        .status(401)
-        .json({ message: 'Authentication error: Password is invalid!' });
+    // Check if the password is correct
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: 'Invalid password' });
     }
 
-    // Generate the JWT
-    const payload = {
-      userId: user._id,
-      accessLevel: user.accessLevel,
-    };
+    // Generate a JWT token
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    const token = jwt.sign(payload, process.env.JWT_SECRET, {
-      expiresIn: '1h',
+    // Send back the token and access level
+    return res.status(200).json({
+      token,
+      accessLevel: user.accessLevel, // Ensure accessLevel is included in the response
+    });
+  } catch (error) {
+    console.error('Error during login:', error);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Signup route
+router.post('/signup', async (req, res) => {
+  const { firstName, lastName, email, password, accessLevel } = req.body;
+
+  try {
+    // Check if the email is already registered
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const newUser = new User({
+      firstName,
+      lastName,
+      email,
+      password: hashedPassword,
+      accessLevel,
     });
 
-    res.status(200).json({ token });
-  } catch (err) {
-    console.error('Authentication error:', err);
-    res.status(500).json({ message: 'A server error occurred during sign in' });
+    await newUser.save();
+    res.status(201).json({ message: 'User created successfully' });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
