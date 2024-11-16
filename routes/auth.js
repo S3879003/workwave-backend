@@ -26,10 +26,26 @@ router.post('/signin', async (req, res) => {
     // Generate a JWT token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
 
-    // Send back the token and access level
+    // Debugging: Log the user data being sent back
+    console.log('User data:', {
+      token,
+      accessLevel: user.accessLevel,
+      userId: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      bio: user.bio,
+    });
+
+    // Send back the token and the users info
     return res.status(200).json({
       token,
-      accessLevel: user.accessLevel, // Ensure accessLevel is included in the response
+      accessLevel: user.accessLevel,
+      userId: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      bio: user.bio,
     });
   } catch (error) {
     console.error('Error during login:', error);
@@ -50,6 +66,8 @@ router.post('/signup', async (req, res) => {
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    //
 
     // Create a new user
     const newUser = new User({

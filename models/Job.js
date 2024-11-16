@@ -2,7 +2,7 @@
 const mongoose = require('mongoose');
 
 // Define the user model for mongoose
-const UserSchema = new mongoose.Schema({
+const JobSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName:  { type: String, required: true },
   email:     { type: String, required: true, unique: true },
@@ -12,4 +12,4 @@ const UserSchema = new mongoose.Schema({
 });
 
 // export the model
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model('Job', JobSchema);
