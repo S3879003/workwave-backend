@@ -8,12 +8,13 @@ const JobSchema = new mongoose.Schema({
   img: { type: String, required: true },
   jobType: { type: String, required: true },
   budget: { type: Number, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Associate with a user
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // The client who posted the job
+  freelancerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // The freelancer accepted for the job
   status: { 
     type: String, 
     enum: ['active', 'accepted', 'complete'], 
     default: 'active' 
-  } // Job status field with default value
+  },
 }, { timestamps: true });
 
 // Export the model

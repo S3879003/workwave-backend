@@ -4,10 +4,26 @@ const Job = require('../models/Job');
 const User = require('../models/User'); // Import the User model
 
 
-// Get all listed projects
-router.get('/listings', async (req, res) => {
+// Get all listed active projects
+router.get('/listings/active', async (req, res) => {
+  try {
+    // Fetch all jobs with status 'active'
+    const activeJobs = await Job.find({ status: 'active' }).populate('userId', 'firstName lastName');
 
+    // Check if there are no active jobs
+    if (!activeJobs || activeJobs.length === 0) {
+      return res.status(200).json({ message: 'No active jobs found', jobs: [] });
+    }
+
+    // Return the list of active jobs
+    res.status(200).json({ jobs: activeJobs });
+  } catch (err) {
+    console.error('Error retrieving active jobs:', err);
+    res.status(500).json({ message: 'Server error: Unable to retrieve active jobs' });
+  }
 });
+
+module.exports = router;
 
 // Mark a job as completed
 router.put('/:userid/listings/:id/complete', async (req, res) => {
@@ -19,8 +35,8 @@ router.delete('/delete', async (req, res) => {
 
 });
 
-// Retrieve list of a users active projects.
-router.get('/:userid/active', async (req, res) => {
+// Retrieve list of ongoing projects for a user.
+router.get('/:userid/ongoing', async (req, res) => {
 
 });
 
