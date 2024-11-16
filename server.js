@@ -10,6 +10,7 @@ dotenv.config();
 // import the application routes
 const userRoutes = require('./routes/user');
 const authRoutes = require('./routes/auth');
+const jobRoutes = require('./routes/jobs');
 
 // initialize the express app
 const app = express();
@@ -18,11 +19,13 @@ const app = express();
 app.use(cors())
 
 // setup the middleware
-app.use(bodyParser.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 // setup the API routes
 app.use('/user', userRoutes);
 app.use('/auth', authRoutes);
+app.use('/job', jobRoutes);
 
 // connect to the Mongo database
 mongoose.connect(process.env.MONGODB_URI)
