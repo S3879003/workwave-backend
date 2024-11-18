@@ -6,6 +6,7 @@ const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
 
 // Sign-in route
 router.post('/signin', async (req, res) => {

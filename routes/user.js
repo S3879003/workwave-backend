@@ -1,6 +1,10 @@
 // User routes for handling all CRUD functions
 
 const express = require('express');
+const multer = require('multer');
+const sharp = require('sharp');
+const fs = require('fs');
+const path = require('path');
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
@@ -91,6 +95,57 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({ message: 'Error: A server error occured deleting the user' });
   }
 });
+
+// Configure multer for handling file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
+});
+
+// Function to process and save the profile picture
+const processProfilePicture = async (buffer, filename) => {
+  const outputPath = path.join(__dirname, '../uploads', filename);
+  await sharp(buffer)
+    .resize(200, 200) // Resize image to 200x200
+    .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+    .toFile(outputPath);
+  return `/uploads/${filename}`;
+};
+
+// Route to handle profile picture update
+router.put('/:userId/profile-picture', upload.single('profilePicture'), async (req, res) => {
+  const { userId } = req.params;
+
+  if (!req.file) {
+    return res.status(400).json({ message: 'No file uploaded' });
+  }
+
+  try {
+    // Generate a unique filename
+    const filename = `${Date.now()}-${req.file.originalname.replace(/\s+/g, '-')}`;
+
+    // Process and save the profile picture
+    const profilePicturePath = await processProfilePicture(req.file.buffer, filename);
+
+    // Update the user in the database
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { profilePicture: profilePicturePath },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.status(200).json({ profilePicture: profilePicturePath });
+  } catch (err) {
+    console.error('Error updating profile picture:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 
 // Exporting the module
 module.exports = router;
