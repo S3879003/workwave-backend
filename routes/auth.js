@@ -1,6 +1,7 @@
-// Authentication routes for handling user authentication
-
+// Authentication routes for handling user authentication.
 const express = require('express');
+const multer = require('multer');
+const sharp = require('sharp');
 const router = express.Router();
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
@@ -53,21 +54,37 @@ router.post('/signin', async (req, res) => {
   }
 });
 
-// Signup route
-router.post('/signup', async (req, res) => {
+// Set up multer for handling file uploads
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
+});
+
+// Utility function to resize and save the image using sharp
+const processProfilePicture = async (fileBuffer, filename) => {
+  const outputPath = `uploads/${filename}`;
+  await sharp(fileBuffer)
+    .resize(200, 200) // Resize to 200x200 pixels
+    .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+    .toFile(outputPath);
+  return outputPath;
+};
+
+// Signup route with image upload, processing, and storage
+router.post('/signup', upload.single('profilePicture'), async (req, res) => {
   const { firstName, lastName, email, password, accessLevel } = req.body;
 
-  try {
-    // Check if the email is already registered
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'Email already registered' });
-    }
+  // Check if a profile picture was uploaded
+  let profilePicturePath = null;
+  if (req.file) {
+    const filename = `${Date.now()}-${req.file.originalname.replace(/\s+/g, '-')}`;
+    profilePicturePath = await processProfilePicture(req.file.buffer, filename);
+  }
 
+  try {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    //
 
     // Create a new user
     const newUser = new User({
@@ -76,12 +93,13 @@ router.post('/signup', async (req, res) => {
       email,
       password: hashedPassword,
       accessLevel,
+      profilePicture: profilePicturePath
     });
 
     await newUser.save();
-    res.status(201).json({ message: 'User created successfully' });
-  } catch (error) {
-    console.error('Signup error:', error);
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (err) {
+    console.error('Error creating user:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
