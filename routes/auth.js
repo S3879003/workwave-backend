@@ -64,7 +64,7 @@ const upload = multer({
 
 // Utility function to resize and save the image using sharp
 const processProfilePicture = async (fileBuffer, filename) => {
-  const outputPath = `uploads/${filename}`;
+  const outputPath = `/uploads/${filename}`;
   await sharp(fileBuffer)
     .resize(200, 200) // Resize to 200x200 pixels
     .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
