@@ -14,10 +14,10 @@ const JobSchema = new mongoose.Schema({
   img: { type: String, required: true },
   jobType: { type: String, required: true },
   budget: { type: Number, required: true },
-  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Client ID
-  freelancerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, // Assigned freelancer
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, 
+  freelancerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null }, 
   status: { type: String, enum: ['active', 'accepted', 'complete'], default: 'active' },
-  bids: [BidSchema] // Embedded bids array
+  bids: [BidSchema] 
 }, { timestamps: true });
 
 module.exports = mongoose.model('Job', JobSchema);

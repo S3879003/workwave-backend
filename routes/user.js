@@ -100,15 +100,15 @@ router.delete('/:id', async (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // Function to process and save the profile picture
 const processProfilePicture = async (buffer, filename) => {
   const outputPath = path.join(__dirname, '../uploads', filename);
   await sharp(buffer)
-    .resize(200, 200) // Resize image to 200x200
-    .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+    .resize(200, 200)
+    .jpeg({ quality: 80 })
     .toFile(outputPath);
   return `/uploads/${filename}`;
 };

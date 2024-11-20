@@ -33,8 +33,8 @@ app.use('/job', jobRoutes);
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
-    socketTimeoutMS: 45000           // Close sockets after 45 seconds
+    serverSelectionTimeoutMS: 30000, 
+    socketTimeoutMS: 45000 
   })
   .then(() => {
     console.log('Connection to the MongoDB database successful');

@@ -7,7 +7,7 @@ const UserSchema = new mongoose.Schema({
   password: { type: String, required: true },
   bio: { type: String, default: "", required: false },
   accessLevel: { type: Number, default: 1, required: true },
-  profilePicture: { type: String, required: false }, // URL for the profile picture
+  profilePicture: { type: String, required: false }, 
 });
 
 module.exports = mongoose.model('User', UserSchema);

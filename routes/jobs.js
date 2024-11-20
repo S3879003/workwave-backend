@@ -27,7 +27,6 @@ module.exports = router;
 
 // Mark a job as completed
 router.put('/:userid/listings/:jobid/complete', async (req, res) => {
-  const userid = req.params.userid;
   const jobid = req.params.jobid;
 
   console.log(req.params)
@@ -54,12 +53,11 @@ router.put('/:userid/listings/:jobid/complete', async (req, res) => {
 
 // Deletes a job
 router.delete('/:userid/listings/:jobid/delete', async (req, res) => {
-  const userid = req.params.userid;
   const jobid = req.params.jobid;
 
   try {
     // Find the job by its ID and ensure the user is the owner
-    const job = await Job.findOneAndDelete({ _id: jobid, userId: userid });
+    const job = await Job.findOneAndDelete({ _id: jobid });
 
     if (!job) {
       return res.status(404).json({ message: 'Job not found or you do not have permission to delete this job.' });
@@ -97,8 +95,8 @@ router.get('/:userid/ongoing', async (req, res) => {
 
 // Allow freelancers to bid on the target project
 router.post('/:userid/listings/:id/bid', async (req, res) => {
-  const { userid, id } = req.params; // userid: Freelancer's ID, id: Job's ID
-  const { amount } = req.body; // The bid amount
+  const { userid, id } = req.params;
+  const { amount } = req.body;
 
   try {
     // Validate bid amount
@@ -108,7 +106,7 @@ router.post('/:userid/listings/:id/bid', async (req, res) => {
 
     // Check if the user exists and is a freelancer
     const user = await User.findById(userid);
-    if (!user || user.accessLevel !== 1) { // Assuming accessLevel 1 is for freelancers
+    if (!user || user.accessLevel !== 1) {
       return res.status(403).json({ message: 'Access denied: Only freelancers can place bids' });
     }
 

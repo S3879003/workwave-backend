@@ -59,15 +59,15 @@ router.post('/signin', async (req, res) => {
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage,
-  limits: { fileSize: 5 * 1024 * 1024 } // Limit file size to 5MB
+  limits: { fileSize: 5 * 1024 * 1024 }
 });
 
 // Utility function to resize and save the image using sharp
 const processProfilePicture = async (fileBuffer, filename) => {
   const outputPath = `/uploads/${filename}`;
   await sharp(fileBuffer)
-    .resize(200, 200) // Resize to 200x200 pixels
-    .jpeg({ quality: 80 }) // Convert to JPEG with 80% quality
+    .resize(200, 200)
+    .jpeg({ quality: 80 })
     .toFile(outputPath);
   return outputPath;
 };
