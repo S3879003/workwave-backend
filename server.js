@@ -40,7 +40,7 @@ mongoose.connect(process.env.MONGODB_URI)
 
 
 // start the server
-const PORT = 8888;
+const PORT = process.env.PORT;
 
 const server = app.listen(PORT, () => {
   const host = server.address().address;
