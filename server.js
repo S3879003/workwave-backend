@@ -30,7 +30,12 @@ app.use('/auth', authRoutes);
 app.use('/job', jobRoutes);
 
 // connect to the Mongo database
-mongoose.connect(process.env.MONGODB_URI)
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 30000, // Increase timeout to 30 seconds
+    socketTimeoutMS: 45000           // Close sockets after 45 seconds
+  })
   .then(() => {
     console.log('Connection to the MongoDB database successful');
   })
