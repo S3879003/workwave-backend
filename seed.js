@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const dotenv = require('dotenv');
 const User = require('./models/User');
+const Job = require('./models/Job')
 
 dotenv.config();
 
@@ -25,6 +26,8 @@ async function seedUsers() {
   try {
     // Remove any existing users from the database
     await User.deleteMany({});
+
+    await Job.deleteMany({});
 
     // Array of users to seed the database with
     const users = [

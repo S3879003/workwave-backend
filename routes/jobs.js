@@ -26,14 +26,18 @@ router.get('/listings/active', async (req, res) => {
 module.exports = router;
 
 // Mark a job as completed
-router.put('/:userid/listings/:id/complete', async (req, res) => {
-  const { userid, id } = req.params;
+router.put('/:userid/listings/:jobid/complete', async (req, res) => {
+  const userid = req.params.userid;
+  const jobid = req.params.jobid;
+
+  console.log(req.params)
 
   try {
     // Find the job by its ID and ensure the user is the owner
-    const job = await Job.findOne({ _id: id, userId: userid });
+    const job = await Job.findOne({ _id: jobid });
 
     if (!job) {
+      console.log("1")
       return res.status(404).json({ message: 'Job not found or you do not have permission to complete this job.' });
     }
 
@@ -49,12 +53,13 @@ router.put('/:userid/listings/:id/complete', async (req, res) => {
 });
 
 // Deletes a job
-router.delete('/:userid/listings/:id/delete', async (req, res) => {
-  const { userid, id } = req.params;
+router.delete('/:userid/listings/:jobid/delete', async (req, res) => {
+  const userid = req.params.userid;
+  const jobid = req.params.jobid;
 
   try {
     // Find the job by its ID and ensure the user is the owner
-    const job = await Job.findOneAndDelete({ _id: id, userId: userid });
+    const job = await Job.findOneAndDelete({ _id: jobid, userId: userid });
 
     if (!job) {
       return res.status(404).json({ message: 'Job not found or you do not have permission to delete this job.' });
@@ -257,5 +262,86 @@ router.post('/:userid/listings/create', async (req, res) => {
       res.status(500).json({ message: 'Server error: Unable to create job listing' });
     }
   });
+
+
+router.get('/listings/:jobId/bids/:userId', async (req, res) => {
+  const { jobId, userId } = req.params;
+
+  console.log("hit the route")
+
+  try {
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    } else {
+      console.log("hello world")
+    }
+
+    const bid = job.bids.find(bid => bid.freelancerId.toString() === userId);
+    if (!bid) {
+      return res.status(200).json({ message: 'No bid found for this user', bid: null });
+    }
+
+    res.status(200).json({ bid });
+  } catch (err) {
+    console.error('Error retrieving bid:', err);
+    res.status(500).json({ message: 'Server error: Unable to retrieve bid' });
+  }
+});
+
+// Submit a new bid for a job
+router.post('/listings/:jobId/bids', async (req, res) => {
+  const { jobId } = req.params;
+  const { freelancerId, amount } = req.body;
+
+  try {
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    // Check if the user has already placed a bid
+    const existingBid = job.bids.find(bid => bid.freelancerId.toString() === freelancerId);
+    if (existingBid) {
+      return res.status(400).json({ message: 'You have already bid on this job' });
+    }
+
+    // Add the new bid
+    job.bids.push({ freelancerId, amount });
+    await job.save();
+
+    res.status(201).json({ message: 'Bid submitted successfully', bid: { freelancerId, amount } });
+  } catch (err) {
+    console.error('Error submitting bid:', err);
+    res.status(500).json({ message: 'Server error: Unable to submit bid' });
+  }
+});
+
+// Modify an existing bid for a job
+router.put('/listings/:jobId/bids/:userId', async (req, res) => {
+  const { jobId, userId } = req.params;
+  const { amount } = req.body;
+
+  try {
+    const job = await Job.findById(jobId);
+    if (!job) {
+      return res.status(404).json({ message: 'Job not found' });
+    }
+
+    const bid = job.bids.find(bid => bid.freelancerId.toString() === userId);
+    if (!bid) {
+      return res.status(404).json({ message: 'No bid found for this user' });
+    }
+
+    // Update the bid amount
+    bid.amount = amount;
+    await job.save();
+
+    res.status(200).json({ message: 'Bid updated successfully', bid });
+  } catch (err) {
+    console.error('Error modifying bid:', err);
+    res.status(500).json({ message: 'Server error: Unable to modify bid' });
+  }
+});
 
 module.exports = router;
